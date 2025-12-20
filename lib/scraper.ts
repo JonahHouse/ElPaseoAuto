@@ -59,6 +59,7 @@ function extractDwsField($: ReturnType<typeof cheerio.load>, iconClass: string):
 
 // Fetch HTML using Puppeteer (headless browser)
 async function fetchHtmlWithPuppeteer(browser: Browser, url: string): Promise<string> {
+  console.log(`Creating new page for: ${url}`);
   const page = await browser.newPage();
 
   try {
@@ -67,15 +68,24 @@ async function fetchHtmlWithPuppeteer(browser: Browser, url: string): Promise<st
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     );
 
-    await page.goto(url, {
+    console.log(`Navigating to: ${url}`);
+    const response = await page.goto(url, {
       waitUntil: "networkidle2",
       timeout: 30000
     });
 
-    // Wait for content to load
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    console.log(`Response status: ${response?.status()}`);
 
-    return await page.content();
+    // Wait for content to load
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const content = await page.content();
+    console.log(`Page content length: ${content.length}`);
+
+    return content;
+  } catch (error) {
+    console.error(`Error fetching ${url}:`, error);
+    throw error;
   } finally {
     await page.close();
   }
@@ -90,6 +100,11 @@ async function getVehicleListingsFromBrowser(browser: Browser): Promise<ListingD
   const html = await fetchHtmlWithPuppeteer(browser, `${SOURCE_URL}/inventory`);
   const $ = cheerio.load(html);
 
+  // Debug: log HTML length and check for key elements
+  console.log(`HTML length: ${html.length}`);
+  const sliderCount = $(".vlp-image-slider[data-vehicle-stock-number]").length;
+  console.log(`Found ${sliderCount} sliders with data-vehicle-stock-number`);
+
   // Find all vehicle sliders with data attributes
   $(".vlp-image-slider[data-vehicle-stock-number]").each((_, el) => {
     const $slider = $(el);
@@ -102,10 +117,13 @@ async function getVehicleListingsFromBrowser(browser: Browser): Promise<ListingD
     const engine = $slider.attr("data-vehicle-engine") || "";
     const trim = $slider.attr("data-vehicle-trim") || "";
 
-    // Find the detail URL for this vehicle
+    console.log(`  Processing: ${year} ${make} ${model} (${stockNumber})`);
+
+    // Find the detail URL for this vehicle - try multiple approaches
     const $wrapper = $slider.closest(".dws-listing-vehicle-info-wrapper, .item-vehicle");
     let detailUrl = "";
 
+    // Approach 1: Look for view details links
     $wrapper.find("a.view-details-link, a.view-details-button").each((_, link) => {
       const href = $(link).attr("href");
       if (href && href.includes("/inventory/")) {
@@ -113,7 +131,7 @@ async function getVehicleListingsFromBrowser(browser: Browser): Promise<ListingD
       }
     });
 
-    // Fallback: look for any inventory link nearby
+    // Approach 2: Look for any inventory link with stock number
     if (!detailUrl) {
       $wrapper.find("a[href*='/inventory/']").each((_, link) => {
         const href = $(link).attr("href");
@@ -121,6 +139,13 @@ async function getVehicleListingsFromBrowser(browser: Browser): Promise<ListingD
           detailUrl = href.startsWith("http") ? href : `${SOURCE_URL}${href}`;
         }
       });
+    }
+
+    // Approach 3: Construct URL from stock number if we have make/model
+    if (!detailUrl && stockNumber && make && model) {
+      const slug = `${make}-${model}`.toLowerCase().replace(/\s+/g, "-");
+      detailUrl = `${SOURCE_URL}/inventory/${slug}/${stockNumber.toLowerCase()}`;
+      console.log(`    Constructed URL: ${detailUrl}`);
     }
 
     if (stockNumber && detailUrl) {
@@ -134,6 +159,8 @@ async function getVehicleListingsFromBrowser(browser: Browser): Promise<ListingD
         engine,
         trim,
       });
+    } else {
+      console.log(`    Skipped - missing stockNumber (${stockNumber}) or detailUrl (${detailUrl})`);
     }
   });
 
