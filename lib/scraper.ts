@@ -254,6 +254,7 @@ export async function scrapeInventory(): Promise<ScrapedVehicle[]> {
   console.log("Launching browser...");
   const browser = await puppeteer.launch({
     headless: true,
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -289,7 +290,11 @@ export async function scrapeInventory(): Promise<ScrapedVehicle[]> {
 
 // Legacy exports for compatibility
 export async function getInventoryUrls(): Promise<string[]> {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
   try {
     const listings = await getVehicleListingsFromBrowser(browser);
     return listings.map(l => l.url);
@@ -299,7 +304,11 @@ export async function getInventoryUrls(): Promise<string[]> {
 }
 
 export async function scrapeVehicleDetail(url: string): Promise<ScrapedVehicle | null> {
-  const browser = await puppeteer.launch({ headless: true });
+  const browser = await puppeteer.launch({
+    headless: true,
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
   try {
     // Create a basic listing from URL
     const urlParts = url.match(/\/inventory\/([^/]+)\/([^/]+)\/([^/]+)/);
