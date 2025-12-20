@@ -1,0 +1,13 @@
+{
+  "watch": [
+    "next.config.ts",
+    "tailwind.config.ts",
+    "postcss.config.mjs",
+    ".env",
+    ".env.local",
+    "prisma/schema.prisma"
+  ],
+  "ext": "ts,js,mjs,json",
+  "exec": "next dev --turbopack",
+  "delay": 1000
+}

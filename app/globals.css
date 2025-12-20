@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+/* El Paseo Auto Brand Colors */
+:root {
+  /* Primary - Gold */
+  --gold: #D4A84B;
+  --gold-light: #E8C068;
+  --gold-dark: #B8923F;
+
+  /* Neutrals */
+  --black: #0A0A0A;
+  --charcoal: #1A1A1A;
+  --gray-dark: #2A2A2A;
+  --gray: #4A4A4A;
+  --gray-light: #8A8A8A;
+  --white: #FFFFFF;
+  --off-white: #F8F6F3;
+
+  /* Theme */
+  --background: var(--white);
+  --foreground: var(--charcoal);
+}
+
+@theme inline {
+  /* Colors */
+  --color-gold: var(--gold);
+  --color-gold-light: var(--gold-light);
+  --color-gold-dark: var(--gold-dark);
+  --color-black: var(--black);
+  --color-charcoal: var(--charcoal);
+  --color-gray-dark: var(--gray-dark);
+  --color-gray: var(--gray);
+  --color-gray-light: var(--gray-light);
+  --color-white: var(--white);
+  --color-off-white: var(--off-white);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Fonts */
+  --font-display: var(--font-cormorant);
+  --font-body: var(--font-montserrat);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Typography utilities */
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+.font-body {
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+/* Gold gradient for special elements */
+.gold-gradient {
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dark) 100%);
+}
+
+/* Gold text gradient */
+.text-gold-gradient {
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Subtle shadow for cards */
+.shadow-luxury {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Hover transition */
+.transition-luxury {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Embla Carousel */
+.embla {
+  overflow: hidden;
+}
+
+.embla__container {
+  display: flex;
+}
+
+.embla__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
