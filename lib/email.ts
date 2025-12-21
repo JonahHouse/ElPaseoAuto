@@ -88,7 +88,7 @@ export async function sendContactNotification(data: ContactEmailData) {
   try {
     const resend = getResendClient();
     const { error } = await resend.emails.send({
-      from: "El Paseo Auto <onboarding@resend.dev>",
+      from: "El Paseo Auto <noreply@elpaseoauto.com>",
       to: process.env.CONTACT_EMAIL || siteConfig.email,
       replyTo: data.email,
       subject,
