@@ -74,7 +74,9 @@ export default function Header() {
                   {link.label}
                 </Link>
               ))}
-              <Button size="sm">Schedule Visit</Button>
+              <Link href="/contact">
+                <Button size="sm">Schedule Visit</Button>
+              </Link>
             </nav>
 
             {/* Mobile Menu Button */}

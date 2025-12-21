@@ -84,7 +84,7 @@ export default function Hero({ vehicles }: HeroProps) {
   }
 
   return (
-    <section className="relative h-[50vh] md:h-[60vh] lg:h-[70vh]">
+    <section className="relative h-[60vh] md:h-[70vh] lg:h-[80vh]">
       {/* Background Carousel */}
       <div className="absolute inset-0 bg-charcoal overflow-hidden">
         <div className="embla h-full" ref={emblaRef}>
@@ -122,13 +122,13 @@ export default function Hero({ vehicles }: HeroProps) {
         <div className="container mx-auto px-4 lg:px-8">
           {/* Current Vehicle Info */}
           {currentVehicle && (
-            <div className="mb-4 md:mb-6">
-              <h1 className="font-display text-2xl md:text-3xl lg:text-4xl text-white font-semibold leading-tight mb-1">
+            <div className="mb-3 md:mb-4">
+              <h1 className="font-display text-xl md:text-2xl lg:text-3xl text-white font-semibold leading-tight mb-1">
                 {currentVehicle.year} {currentVehicle.make}{" "}
                 <span className="text-gold-gradient">{currentVehicle.model}</span>
               </h1>
               {currentVehicle.price && (
-                <p className="text-white text-xl md:text-2xl font-semibold">
+                <p className="text-white text-lg md:text-xl font-semibold">
                   {formatPrice(currentVehicle.price)}
                 </p>
               )}
@@ -136,14 +136,14 @@ export default function Hero({ vehicles }: HeroProps) {
           )}
 
           {/* CTAs */}
-          <div className="flex flex-row gap-3 mb-4 md:mb-6">
+          <div className="flex flex-row gap-2 mb-3 md:mb-4">
             {currentVehicle && (
               <Link href={`/inventory/${currentVehicle.vin}`}>
-                <Button>View Vehicle</Button>
+                <Button size="sm">View Vehicle</Button>
               </Link>
             )}
             <Link href="/inventory">
-              <Button variant="outline">Browse Inventory</Button>
+              <Button variant="outline" size="sm">Browse Inventory</Button>
             </Link>
           </div>
 

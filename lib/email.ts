@@ -1,15 +1,7 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { siteConfig } from "./siteConfig";
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.gmail.com",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: process.env.SMTP_SECURE === "true",
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface ContactEmailData {
   name: string;
@@ -87,25 +79,20 @@ export async function sendContactNotification(data: ContactEmailData) {
     </div>
   `;
 
-  const textContent = `
-New ${typeLabel}
-${data.vehicleTitle ? `Vehicle: ${data.vehicleTitle}\n` : ""}
-Name: ${data.name}
-Email: ${data.email}
-${data.phone ? `Phone: ${data.phone}\n` : ""}
-Message:
-${data.message}
-  `.trim();
-
   try {
-    await transporter.sendMail({
-      from: `"${siteConfig.name}" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+    const { error } = await resend.emails.send({
+      from: "El Paseo Auto <onboarding@resend.dev>",
       to: process.env.CONTACT_EMAIL || siteConfig.email,
       replyTo: data.email,
       subject,
-      text: textContent,
       html: htmlContent,
     });
+
+    if (error) {
+      console.error("Failed to send email:", error);
+      return { success: false, error };
+    }
+
     return { success: true };
   } catch (error) {
     console.error("Failed to send email:", error);

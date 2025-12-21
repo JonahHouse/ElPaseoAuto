@@ -91,9 +91,11 @@ export default function MobileNav({ isOpen, onClose, links }: MobileNavProps) {
           </ul>
 
           <div className="mt-10">
-            <Button className="w-full" onClick={onClose}>
-              Schedule Visit
-            </Button>
+            <Link href="/contact" onClick={onClose}>
+              <Button className="w-full">
+                Schedule Visit
+              </Button>
+            </Link>
           </div>
 
           {/* Contact Info */}
