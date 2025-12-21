@@ -5,20 +5,78 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Input";
 import { siteConfig } from "@/lib/siteConfig";
+import { isValidEmail, isValidPhone } from "@/lib/validation";
+
+interface FieldErrors {
+  email?: string;
+  phone?: string;
+}
 
 export default function ContactCTA() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const validateField = (name: string, value: string) => {
+    if (name === "email") {
+      if (!value) return "Email is required";
+      if (!isValidEmail(value)) return "Please enter a valid email address";
+    }
+    if (name === "phone" && value && !isValidPhone(value)) {
+      return "Please enter a valid phone number";
+    }
+    return undefined;
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    const error = validateField(name, value);
+    setErrors((prev) => ({ ...prev, [name]: error }));
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
+
+    // Validate all fields
+    const emailError = validateField("email", email);
+    const phoneError = validateField("phone", phone);
+
+    if (emailError || phoneError) {
+      setErrors({ email: emailError, phone: phoneError });
+      setTouched({ email: true, phone: true });
+      return;
+    }
+
+    setErrors({});
     setIsSubmitting(true);
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.get("name"),
+          email,
+          phone,
+          message: formData.get("message"),
+          type: "general",
+        }),
+      });
 
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+      if (response.ok) {
+        setIsSubmitted(true);
+      }
+    } catch {
+      // Handle error
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -119,20 +177,32 @@ export default function ContactCTA() {
                       placeholder="Your name"
                       required
                     />
-                    <Input
-                      label="Phone"
-                      name="phone"
-                      type="tel"
-                      placeholder="(555) 555-5555"
-                    />
+                    <div>
+                      <Input
+                        label="Phone"
+                        name="phone"
+                        type="tel"
+                        placeholder="(555) 555-5555"
+                        onBlur={handleBlur}
+                      />
+                      {touched.phone && errors.phone && (
+                        <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                      )}
+                    </div>
                   </div>
-                  <Input
-                    label="Email"
-                    name="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    required
-                  />
+                  <div>
+                    <Input
+                      label="Email"
+                      name="email"
+                      type="email"
+                      placeholder="your@email.com"
+                      required
+                      onBlur={handleBlur}
+                    />
+                    {touched.email && errors.email && (
+                      <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                    )}
+                  </div>
                   <Textarea
                     label="Message"
                     name="message"

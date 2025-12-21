@@ -8,7 +8,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className = "", label, error, id, ...props }, ref) => {
+  ({ className = "", label, error, id, required, ...props }, ref) => {
     const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
 
     return (
@@ -19,11 +19,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             className="block text-sm font-medium text-charcoal mb-2"
           >
             {label}
+            {required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
         <input
           ref={ref}
           id={inputId}
+          required={required}
           className={`
             w-full px-4 py-3
             bg-white border border-gray-light/30
@@ -55,7 +57,7 @@ export const Textarea = forwardRef<
     label?: string;
     error?: string;
   }
->(({ className = "", label, error, id, ...props }, ref) => {
+>(({ className = "", label, error, id, required, ...props }, ref) => {
   const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
 
   return (
@@ -66,11 +68,13 @@ export const Textarea = forwardRef<
           className="block text-sm font-medium text-charcoal mb-2"
         >
           {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       <textarea
         ref={ref}
         id={inputId}
+        required={required}
         className={`
           w-full px-4 py-3
           bg-white border border-gray-light/30
@@ -98,7 +102,7 @@ export const Select = forwardRef<
     label?: string;
     error?: string;
   }
->(({ className = "", label, error, id, children, ...props }, ref) => {
+>(({ className = "", label, error, id, required, children, ...props }, ref) => {
   const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
 
   return (
@@ -109,11 +113,13 @@ export const Select = forwardRef<
           className="block text-sm font-medium text-charcoal mb-2"
         >
           {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
       <select
         ref={ref}
         id={inputId}
+        required={required}
         className={`
           w-full px-4 py-3
           bg-white border border-gray-light/30
