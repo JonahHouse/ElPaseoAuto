@@ -1,7 +1,13 @@
 import { Resend } from "resend";
 import { siteConfig } from "./siteConfig";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY environment variable is not set");
+  }
+  return new Resend(apiKey);
+}
 
 interface ContactEmailData {
   name: string;
@@ -80,6 +86,7 @@ export async function sendContactNotification(data: ContactEmailData) {
   `;
 
   try {
+    const resend = getResendClient();
     const { error } = await resend.emails.send({
       from: "El Paseo Auto <onboarding@resend.dev>",
       to: process.env.CONTACT_EMAIL || siteConfig.email,
