@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Button from "@/components/ui/Button";
@@ -16,39 +15,11 @@ const navLinks = [
 ];
 
 export default function Header() {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const pathname = usePathname();
-
-  // Only use transparent header on home page
-  const isHomePage = pathname === "/";
-  const useTransparent = isHomePage && !isScrolled;
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-
-    // Check initial scroll position
-    handleScroll();
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   return (
     <>
-      <header
-        className={`
-          fixed top-0 left-0 right-0 z-50
-          transition-all duration-300
-          ${
-            useTransparent
-              ? "bg-transparent py-6"
-              : "bg-charcoal shadow-luxury py-4"
-          }
-        `}
-      >
+      <header className="sticky top-0 bg-charcoal py-4 z-50 shadow-luxury">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -58,7 +29,7 @@ export default function Header() {
                 alt="El Paseo Auto Group"
                 width={400}
                 height={108}
-                className="h-20 w-auto"
+                className="h-16 md:h-20 w-auto"
                 priority
               />
             </Link>

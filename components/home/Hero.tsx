@@ -38,9 +38,10 @@ function formatPrice(price: number): string {
 export default function Hero({ vehicles }: HeroProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
-    Autoplay({ delay: 5000, stopOnInteraction: false }),
-  ]);
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { loop: true, dragFree: false },
+    [Autoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })]
+  );
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -84,10 +85,10 @@ export default function Hero({ vehicles }: HeroProps) {
   }
 
   return (
-    <section className="relative h-[60vh] md:h-[70vh] lg:h-[80vh]">
-      {/* Background Carousel */}
-      <div className="absolute inset-0 bg-charcoal overflow-hidden">
-        <div className="embla h-full" ref={emblaRef}>
+    <section className="bg-charcoal">
+      {/* Image Carousel */}
+      <div className="relative aspect-[3/2] md:aspect-[16/9] lg:aspect-[21/9]">
+        <div className="embla h-full cursor-grab active:cursor-grabbing" ref={emblaRef}>
           <div className="embla__container h-full">
             {vehicles.map((vehicle, index) => {
               const primaryImage =
@@ -99,7 +100,7 @@ export default function Hero({ vehicles }: HeroProps) {
                       src={primaryImage.url}
                       alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
                       fill
-                      className="object-cover opacity-90"
+                      className="object-cover"
                       priority={index === 0}
                       sizes="100vw"
                     />
@@ -109,64 +110,118 @@ export default function Hero({ vehicles }: HeroProps) {
             })}
           </div>
         </div>
-        {/* Subtle overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-r from-charcoal/40 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/50 via-transparent to-transparent pointer-events-none" />
-      </div>
 
-      {/* Gold accent line */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 gold-gradient" />
-
-      {/* Content */}
-      <div className="absolute bottom-8 md:bottom-12 lg:bottom-16 left-0 right-0 z-10">
-        <div className="container mx-auto px-4 lg:px-8">
-          {/* Current Vehicle Info */}
-          {currentVehicle && (
-            <div className="mb-3 md:mb-4">
-              <h1 className="font-display text-xl md:text-2xl lg:text-3xl text-white font-semibold leading-tight mb-1">
-                {currentVehicle.year} {currentVehicle.make}{" "}
-                <span className="text-gold-gradient">{currentVehicle.model}</span>
-              </h1>
-              {currentVehicle.price && (
-                <p className="text-white text-lg md:text-xl font-semibold">
-                  {formatPrice(currentVehicle.price)}
-                </p>
+        {/* Desktop Overlay - hidden on mobile */}
+        <div className="hidden lg:block absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+        <div className="hidden lg:flex absolute bottom-0 left-0 right-0 pointer-events-auto">
+          <div className="container mx-auto px-4 lg:px-8 py-8">
+            <div className="flex items-end justify-between">
+              {/* Current Vehicle Info */}
+              {currentVehicle && (
+                <div>
+                  <h1 className="font-display text-3xl xl:text-4xl 2xl:text-5xl text-white font-semibold leading-tight mb-1">
+                    {currentVehicle.year} {currentVehicle.make}{" "}
+                    <span className="text-gold-gradient">{currentVehicle.model}</span>
+                  </h1>
+                  {currentVehicle.price && (
+                    <p className="text-white/80 text-2xl font-semibold">
+                      {formatPrice(currentVehicle.price)}
+                    </p>
+                  )}
+                </div>
               )}
-            </div>
-          )}
 
-          {/* CTAs */}
-          <div className="flex flex-row gap-2 mb-3 md:mb-4">
-            {currentVehicle && (
-              <Link href={`/inventory/${currentVehicle.vin}`}>
-                <Button size="sm">View Vehicle</Button>
-              </Link>
-            )}
-            <Link href="/inventory">
-              <Button variant="outline" size="sm">Browse Inventory</Button>
-            </Link>
+              {/* CTAs and Indicators */}
+              <div className="flex flex-col items-end gap-4">
+                <div className="flex flex-row gap-3">
+                  {currentVehicle && (
+                    <Link href={`/inventory/${currentVehicle.vin}`}>
+                      <Button>View Vehicle</Button>
+                    </Link>
+                  )}
+                  <Link href="/inventory">
+                    <Button variant="outline">Browse Inventory</Button>
+                  </Link>
+                </div>
+
+                {/* Slide Indicators */}
+                {vehicles.length > 1 && (
+                  <div className="flex gap-2">
+                    {vehicles.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => scrollTo(index)}
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          index === selectedIndex
+                            ? "w-10 bg-gold"
+                            : "w-5 bg-white/30 hover:bg-white/50"
+                        }`}
+                        aria-label={`Go to slide ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-
-          {/* Slide Indicators */}
-          {vehicles.length > 1 && (
-            <div className="flex gap-2">
-              {vehicles.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => scrollTo(index)}
-                  className={`h-1 rounded-full transition-all duration-300 ${
-                    index === selectedIndex
-                      ? "w-8 bg-gold"
-                      : "w-4 bg-white/40 hover:bg-white/60"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
+      {/* Mobile Info Bar - hidden on desktop */}
+      <div className="lg:hidden bg-white border-t border-gray-light/30">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col gap-4">
+            {/* Current Vehicle Info */}
+            {currentVehicle && (
+              <div>
+                <h1 className="font-display text-xl md:text-2xl text-charcoal font-semibold leading-tight">
+                  {currentVehicle.year} {currentVehicle.make}{" "}
+                  <span className="text-gold">{currentVehicle.model}</span>
+                </h1>
+                {currentVehicle.price && (
+                  <p className="text-gray text-lg font-semibold">
+                    {formatPrice(currentVehicle.price)}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* CTAs and Indicators */}
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-row gap-2">
+                {currentVehicle && (
+                  <Link href={`/inventory/${currentVehicle.vin}`}>
+                    <Button size="sm">View Vehicle</Button>
+                  </Link>
+                )}
+                <Link href="/inventory">
+                  <Button variant="secondary" size="sm">Browse Inventory</Button>
+                </Link>
+              </div>
+
+              {/* Slide Indicators */}
+              {vehicles.length > 1 && (
+                <div className="flex gap-2">
+                  {vehicles.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => scrollTo(index)}
+                      className={`h-1 rounded-full transition-all duration-300 ${
+                        index === selectedIndex
+                          ? "w-8 bg-gold"
+                          : "w-4 bg-charcoal/20 hover:bg-charcoal/40"
+                      }`}
+                      aria-label={`Go to slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        {/* Gold accent line */}
+        <div className="h-1 gold-gradient" />
+      </div>
     </section>
   );
 }

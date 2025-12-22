@@ -96,8 +96,8 @@ export default async function VehicleDetailPage({ params }: PageProps) {
   const fullTitle = vehicle.trim ? `${title} ${vehicle.trim}` : title;
 
   return (
-    <div className="pt-32 bg-off-white min-h-screen">
-      <div className="container mx-auto px-4 lg:px-8">
+    <div className="bg-off-white min-h-screen">
+      <div className="container mx-auto px-4 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="mb-6">
           <ol className="flex items-center gap-2 text-sm">

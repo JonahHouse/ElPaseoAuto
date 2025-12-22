@@ -37,7 +37,6 @@
   --color-foreground: var(--foreground);
 
   /* Fonts */
-  --font-display: var(--font-cormorant);
   --font-body: var(--font-montserrat);
 }
 

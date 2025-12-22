@@ -13,7 +13,7 @@ export default function AboutPage() {
   const heroImage = getRandomHeaderImage();
 
   return (
-    <div className="pt-24">
+    <div>
       {/* Hero Section */}
       <section className="relative py-20">
         <div
