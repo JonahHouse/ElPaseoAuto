@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
   const maxYear = searchParams.get("maxYear");
   const make = searchParams.get("make");
   const model = searchParams.get("model");
+  const trim = searchParams.get("trim");
   const limit = searchParams.get("limit") || "200";
 
   if (!make || !model) {
@@ -95,7 +96,10 @@ export async function GET(request: NextRequest) {
   }
   params.set("vehicle.make", make);
   params.set("vehicle.model", model);
-  // Note: trim is intentionally not included - naming varies too much between sources
+  // Trim supports wildcards (e.g., *Sport*) for flexible matching
+  if (trim) {
+    params.set("vehicle.trim", trim);
+  }
   // Note: no location filter - searching nationwide
 
   // Only get used vehicles with prices

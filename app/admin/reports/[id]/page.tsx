@@ -126,6 +126,7 @@ export default function EditReportPage({
   const [yearRange, setYearRange] = useState({ min: 0, max: 0 });
   const [availableTrims, setAvailableTrims] = useState<string[]>([]);
   const [selectedTrim, setSelectedTrim] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState({ make: "", model: "", trim: "" });
 
   useEffect(() => {
     fetchReport();
@@ -252,7 +253,7 @@ export default function EditReportPage({
     });
   };
 
-  const searchListings = async (customYearRange?: { min: number; max: number }) => {
+  const searchListings = async (customYearRange?: { min: number; max: number }, customQuery?: { make: string; model: string; trim: string }) => {
     if (!formData.year || !formData.make || !formData.model) {
       alert("Please fill in year, make, and model first");
       return;
@@ -260,12 +261,16 @@ export default function EditReportPage({
 
     const baseYear = parseInt(formData.year);
     const range = customYearRange || yearRange;
+    const query = customQuery || searchQuery;
 
-    // Initialize year range if not set (default to exact year match)
+    // Initialize search query and year range if not set (first search)
     if (range.min === 0 && range.max === 0) {
       const newRange = { min: baseYear, max: baseYear };
+      // Don't pre-populate trim - it's not standardized, use dropdown filter or wildcard instead
+      const newQuery = { make: formData.make, model: formData.model, trim: "" };
       setYearRange(newRange);
-      return searchListings(newRange);
+      setSearchQuery(newQuery);
+      return searchListings(newRange, newQuery);
     }
 
     setIsSearching(true);
@@ -277,11 +282,11 @@ export default function EditReportPage({
       const params = new URLSearchParams({
         minYear: range.min.toString(),
         maxYear: range.max.toString(),
-        make: formData.make,
-        model: formData.model,
+        make: query.make,
+        model: query.model,
       });
-      if (formData.trim) {
-        params.set("trim", formData.trim);
+      if (query.trim) {
+        params.set("trim", query.trim);
       }
 
       const response = await fetch(`/api/comps/search?${params.toString()}`);
@@ -959,15 +964,9 @@ export default function EditReportPage({
           <div className="bg-white rounded-t-lg md:rounded-sm shadow-luxury w-full md:max-w-4xl h-[90vh] md:max-h-[80vh] overflow-hidden flex flex-col">
             <div className="p-4 border-b border-gray-light">
               <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h2 className="font-display text-lg font-semibold text-charcoal">
-                    Search Listings
-                  </h2>
-                  <p className="text-sm text-gray">
-                    {formData.make} {formData.model}
-                    {formData.trim && ` ${formData.trim}`}
-                  </p>
-                </div>
+                <h2 className="font-display text-lg font-semibold text-charcoal">
+                  Search Listings
+                </h2>
                 <button
                   onClick={() => setShowSearchModal(false)}
                   className="text-gray hover:text-charcoal p-1"
@@ -987,47 +986,84 @@ export default function EditReportPage({
                   </svg>
                 </button>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm text-gray">Years:</span>
-                  <input
-                    type="number"
-                    value={yearRange.min}
-                    onChange={(e) => setYearRange({ ...yearRange, min: parseInt(e.target.value) || 0 })}
-                    className="w-20 px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
-                  />
-                  <span className="text-gray">–</span>
-                  <input
-                    type="number"
-                    value={yearRange.max}
-                    onChange={(e) => setYearRange({ ...yearRange, max: parseInt(e.target.value) || 0 })}
-                    className="w-20 px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
-                  />
-                  <button
-                    onClick={() => searchListings(yearRange)}
-                    disabled={isSearching}
-                    className="px-3 py-1 text-sm bg-gold text-black rounded-sm hover:bg-gold-dark disabled:opacity-50"
-                  >
-                    {isSearching ? "..." : "Update"}
-                  </button>
-                </div>
-                {availableTrims.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray">Trim:</span>
-                    <select
-                      value={selectedTrim}
-                      onChange={(e) => setSelectedTrim(e.target.value)}
-                      className="px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold flex-1 sm:flex-initial"
-                    >
-                      <option value="">All Trims ({searchResults.length})</option>
-                      {availableTrims.map((trim) => (
-                        <option key={trim} value={trim}>
-                          {trim} ({searchResults.filter((r) => r.trim === trim).length})
-                        </option>
-                      ))}
-                    </select>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div>
+                    <label className="block text-xs text-gray mb-1">Make</label>
+                    <input
+                      type="text"
+                      value={searchQuery.make}
+                      onChange={(e) => setSearchQuery({ ...searchQuery, make: e.target.value })}
+                      className="w-full px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
+                    />
                   </div>
-                )}
+                  <div>
+                    <label className="block text-xs text-gray mb-1">Model</label>
+                    <input
+                      type="text"
+                      value={searchQuery.model}
+                      onChange={(e) => setSearchQuery({ ...searchQuery, model: e.target.value })}
+                      className="w-full px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray mb-1">Trim (optional)</label>
+                    <input
+                      type="text"
+                      value={searchQuery.trim}
+                      onChange={(e) => setSearchQuery({ ...searchQuery, trim: e.target.value })}
+                      placeholder="e.g., *Sport*"
+                      className="w-full px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray mb-1">Years</label>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        value={yearRange.min}
+                        onChange={(e) => setYearRange({ ...yearRange, min: parseInt(e.target.value) || 0 })}
+                        className="w-full px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
+                      />
+                      <span className="text-gray">–</span>
+                      <input
+                        type="number"
+                        value={yearRange.max}
+                        onChange={(e) => setYearRange({ ...yearRange, max: parseInt(e.target.value) || 0 })}
+                        className="w-full px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => searchListings(yearRange, searchQuery)}
+                      disabled={isSearching}
+                      className="px-3 py-1 text-sm bg-gold text-black rounded-sm hover:bg-gold-dark disabled:opacity-50"
+                    >
+                      {isSearching ? "Searching..." : "Search"}
+                    </button>
+                    <span className="text-xs text-gray">Use * for wildcards (e.g., *Sport*)</span>
+                  </div>
+                  {availableTrims.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray">Filter:</span>
+                      <select
+                        value={selectedTrim}
+                        onChange={(e) => setSelectedTrim(e.target.value)}
+                        className="px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold flex-1 sm:flex-initial"
+                      >
+                        <option value="">All Trims ({searchResults.length})</option>
+                        {availableTrims.map((trim) => (
+                          <option key={trim} value={trim}>
+                            {trim} ({searchResults.filter((r) => r.trim === trim).length})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
