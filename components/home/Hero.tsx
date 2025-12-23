@@ -103,6 +103,7 @@ export default function Hero({ vehicles }: HeroProps) {
                       className="object-cover"
                       priority={index === 0}
                       sizes="100vw"
+                      quality={90}
                     />
                   )}
                 </div>

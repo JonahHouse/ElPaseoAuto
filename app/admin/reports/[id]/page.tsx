@@ -124,6 +124,8 @@ export default function EditReportPage({
   const [selectedVins, setSelectedVins] = useState<Set<string>>(new Set());
   const [isAddingSelected, setIsAddingSelected] = useState(false);
   const [yearRange, setYearRange] = useState({ min: 0, max: 0 });
+  const [availableTrims, setAvailableTrims] = useState<string[]>([]);
+  const [selectedTrim, setSelectedTrim] = useState<string>("");
 
   useEffect(() => {
     fetchReport();
@@ -288,8 +290,15 @@ export default function EditReportPage({
       if (!response.ok) {
         setSearchError(data.error || "Failed to search listings");
         setSearchResults([]);
+        setAvailableTrims([]);
       } else {
-        setSearchResults(data.results || []);
+        const results = data.results || [];
+        setSearchResults(results);
+        // Extract unique trims from results
+        const trims = [...new Set(results.map((r: SearchResult) => r.trim).filter(Boolean))] as string[];
+        trims.sort();
+        setAvailableTrims(trims);
+        setSelectedTrim(""); // Reset trim filter
       }
     } catch (error) {
       setSearchError("Failed to search listings");
@@ -309,14 +318,6 @@ export default function EditReportPage({
       }
       return next;
     });
-  };
-
-  const toggleSelectAll = () => {
-    if (selectedVins.size === searchResults.length) {
-      setSelectedVins(new Set());
-    } else {
-      setSelectedVins(new Set(searchResults.map((r) => r.vin)));
-    }
   };
 
   const addSelectedResults = async () => {
@@ -986,28 +987,47 @@ export default function EditReportPage({
                   </svg>
                 </button>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-gray">Years:</span>
-                <input
-                  type="number"
-                  value={yearRange.min}
-                  onChange={(e) => setYearRange({ ...yearRange, min: parseInt(e.target.value) || 0 })}
-                  className="w-20 px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
-                />
-                <span className="text-gray">–</span>
-                <input
-                  type="number"
-                  value={yearRange.max}
-                  onChange={(e) => setYearRange({ ...yearRange, max: parseInt(e.target.value) || 0 })}
-                  className="w-20 px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
-                />
-                <button
-                  onClick={() => searchListings(yearRange)}
-                  disabled={isSearching}
-                  className="px-3 py-1 text-sm bg-gold text-black rounded-sm hover:bg-gold-dark disabled:opacity-50"
-                >
-                  {isSearching ? "Searching..." : "Update"}
-                </button>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray">Years:</span>
+                  <input
+                    type="number"
+                    value={yearRange.min}
+                    onChange={(e) => setYearRange({ ...yearRange, min: parseInt(e.target.value) || 0 })}
+                    className="w-20 px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
+                  />
+                  <span className="text-gray">–</span>
+                  <input
+                    type="number"
+                    value={yearRange.max}
+                    onChange={(e) => setYearRange({ ...yearRange, max: parseInt(e.target.value) || 0 })}
+                    className="w-20 px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
+                  />
+                  <button
+                    onClick={() => searchListings(yearRange)}
+                    disabled={isSearching}
+                    className="px-3 py-1 text-sm bg-gold text-black rounded-sm hover:bg-gold-dark disabled:opacity-50"
+                  >
+                    {isSearching ? "Searching..." : "Update"}
+                  </button>
+                </div>
+                {availableTrims.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray">Trim:</span>
+                    <select
+                      value={selectedTrim}
+                      onChange={(e) => setSelectedTrim(e.target.value)}
+                      className="px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
+                    >
+                      <option value="">All Trims ({searchResults.length})</option>
+                      {availableTrims.map((trim) => (
+                        <option key={trim} value={trim}>
+                          {trim} ({searchResults.filter((r) => r.trim === trim).length})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1032,22 +1052,46 @@ export default function EditReportPage({
                   <p className="text-gray">No listings found</p>
                 </div>
               ) : (
+                (() => {
+                  const filteredResults = selectedTrim
+                    ? searchResults.filter((r) => r.trim === selectedTrim)
+                    : searchResults;
+                  return (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between mb-4">
                     <p className="text-sm text-gray">
-                      Found {searchResults.length} listings
+                      {selectedTrim
+                        ? `Showing ${filteredResults.length} of ${searchResults.length} listings`
+                        : `Found ${searchResults.length} listings`}
                     </p>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={selectedVins.size === searchResults.length}
-                        onChange={toggleSelectAll}
+                        checked={filteredResults.length > 0 && filteredResults.every((r) => selectedVins.has(r.vin))}
+                        onChange={() => {
+                          const allSelected = filteredResults.every((r) => selectedVins.has(r.vin));
+                          if (allSelected) {
+                            // Deselect all filtered results
+                            setSelectedVins((prev) => {
+                              const next = new Set(prev);
+                              filteredResults.forEach((r) => next.delete(r.vin));
+                              return next;
+                            });
+                          } else {
+                            // Select all filtered results
+                            setSelectedVins((prev) => {
+                              const next = new Set(prev);
+                              filteredResults.forEach((r) => next.add(r.vin));
+                              return next;
+                            });
+                          }
+                        }}
                         className="w-4 h-4 rounded border-gray-light text-gold focus:ring-gold"
                       />
-                      <span className="text-sm text-gray">Select All</span>
+                      <span className="text-sm text-gray">Select All{selectedTrim ? ` ${selectedTrim}` : ""}</span>
                     </label>
                   </div>
-                  {searchResults.map((result) => (
+                  {filteredResults.map((result) => (
                     <label
                       key={result.vin}
                       className={`flex items-center gap-4 p-3 border rounded-sm cursor-pointer transition-colors ${
@@ -1104,9 +1148,25 @@ export default function EditReportPage({
                           )}
                         </div>
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="text-gray/70 truncate">
-                            {result.source}
-                          </span>
+                          {result.sourceUrl && (
+                            <a
+                              href={result.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-blue-600 hover:underline flex items-center gap-1"
+                            >
+                              <span className="truncate max-w-[150px]">{result.source}</span>
+                              <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </a>
+                          )}
+                          {!result.sourceUrl && (
+                            <span className="text-gray/70 truncate">
+                              {result.source}
+                            </span>
+                          )}
                           {result.accidents !== null && (
                             <span
                               className={`px-1.5 py-0.5 rounded ${
@@ -1143,6 +1203,8 @@ export default function EditReportPage({
                     </label>
                   ))}
                 </div>
+                );
+              })()
               )}
             </div>
 

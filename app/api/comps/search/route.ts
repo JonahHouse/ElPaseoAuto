@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
   const maxYear = searchParams.get("maxYear");
   const make = searchParams.get("make");
   const model = searchParams.get("model");
-  const limit = searchParams.get("limit") || "50";
+  const limit = searchParams.get("limit") || "100";
 
   if (!make || !model) {
     return NextResponse.json(
@@ -84,7 +84,12 @@ export async function GET(request: NextRequest) {
 
   // Year range or exact year
   if (minYear && maxYear) {
-    params.set("vehicle.year", `${minYear}-${maxYear}`);
+    // Use single year format if min equals max (API returns more results this way)
+    if (minYear === maxYear) {
+      params.set("vehicle.year", minYear);
+    } else {
+      params.set("vehicle.year", `${minYear}-${maxYear}`);
+    }
   } else if (year) {
     params.set("vehicle.year", year);
   }
