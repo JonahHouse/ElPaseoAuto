@@ -21,9 +21,9 @@ interface AutoDevListing {
     price: number;
     miles: number;
     dealer: string;
-    city: string;
-    state: string;
-    zip: string;
+    city?: string;
+    state?: string;
+    zip?: string;
     vdp: string;
     primaryImage?: string;
     used: boolean;
@@ -130,9 +130,10 @@ export async function GET(request: NextRequest) {
         source: listing.retailListing?.dealer || "Unknown Dealer",
         sourceUrl: listing.retailListing?.vdp || "",
         imageUrl: listing.retailListing?.primaryImage || null,
-        location: listing.retailListing
-          ? `${listing.retailListing.city}, ${listing.retailListing.state}`
-          : "",
+        location:
+          listing.retailListing?.city && listing.retailListing?.state
+            ? `${listing.retailListing.city}, ${listing.retailListing.state}`
+            : "",
         drivetrain: listing.vehicle.drivetrain || null,
         exteriorColor: listing.vehicle.exteriorColor || null,
         cpo: listing.retailListing?.cpo || false,
