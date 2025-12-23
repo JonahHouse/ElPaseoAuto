@@ -66,13 +66,15 @@ export async function GET(request: NextRequest) {
 
   const searchParams = request.nextUrl.searchParams;
   const year = searchParams.get("year");
+  const minYear = searchParams.get("minYear");
+  const maxYear = searchParams.get("maxYear");
   const make = searchParams.get("make");
   const model = searchParams.get("model");
   const limit = searchParams.get("limit") || "50";
 
-  if (!year || !make || !model) {
+  if (!make || !model) {
     return NextResponse.json(
-      { error: "year, make, and model are required" },
+      { error: "make and model are required" },
       { status: 400 }
     );
   }
@@ -80,8 +82,12 @@ export async function GET(request: NextRequest) {
   // Build the query URL
   const params = new URLSearchParams();
 
-  // Exact year match
-  params.set("vehicle.year", year);
+  // Year range or exact year
+  if (minYear && maxYear) {
+    params.set("vehicle.year", `${minYear}-${maxYear}`);
+  } else if (year) {
+    params.set("vehicle.year", year);
+  }
   params.set("vehicle.make", make);
   params.set("vehicle.model", model);
   // Note: trim is intentionally not included - naming varies too much between sources

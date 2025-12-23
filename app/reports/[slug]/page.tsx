@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { CompImage } from "@/components/comp-image";
 
 async function getReport(slug: string) {
   const report = await prisma.priceReport.findUnique({
@@ -245,15 +246,10 @@ export default async function ReportPage({ params }: PageProps) {
                     key={comp.id}
                     className="border border-gray-light/20 rounded-sm overflow-hidden"
                   >
-                    {comp.imageUrl && (
-                      <div className="aspect-[16/10] bg-gray-light/10 relative">
-                        <img
-                          src={comp.imageUrl}
-                          alt={`${comp.year} ${comp.make} ${comp.model}`}
-                          className="absolute inset-0 w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
+                    <CompImage
+                      src={comp.imageUrl}
+                      alt={`${comp.year} ${comp.make} ${comp.model}`}
+                    />
                     <div className="p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div>

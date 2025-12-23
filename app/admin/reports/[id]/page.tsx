@@ -123,6 +123,7 @@ export default function EditReportPage({
   const [searchError, setSearchError] = useState<string | null>(null);
   const [selectedVins, setSelectedVins] = useState<Set<string>>(new Set());
   const [isAddingSelected, setIsAddingSelected] = useState(false);
+  const [yearRange, setYearRange] = useState({ min: 0, max: 0 });
 
   useEffect(() => {
     fetchReport();
@@ -249,10 +250,20 @@ export default function EditReportPage({
     });
   };
 
-  const searchListings = async () => {
+  const searchListings = async (customYearRange?: { min: number; max: number }) => {
     if (!formData.year || !formData.make || !formData.model) {
       alert("Please fill in year, make, and model first");
       return;
+    }
+
+    const baseYear = parseInt(formData.year);
+    const range = customYearRange || yearRange;
+
+    // Initialize year range if not set (default to exact year match)
+    if (range.min === 0 && range.max === 0) {
+      const newRange = { min: baseYear, max: baseYear };
+      setYearRange(newRange);
+      return searchListings(newRange);
     }
 
     setIsSearching(true);
@@ -262,7 +273,8 @@ export default function EditReportPage({
 
     try {
       const params = new URLSearchParams({
-        year: formData.year,
+        minYear: range.min.toString(),
+        maxYear: range.max.toString(),
         make: formData.make,
         model: formData.model,
       });
@@ -543,7 +555,7 @@ export default function EditReportPage({
               </h3>
               <div className="flex items-center gap-3">
                 <button
-                  onClick={searchListings}
+                  onClick={() => searchListings()}
                   className="text-sm px-3 py-1 bg-charcoal text-white rounded-sm hover:bg-charcoal/90"
                 >
                   Search Listings
@@ -944,34 +956,59 @@ export default function EditReportPage({
       {showSearchModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-sm shadow-luxury max-w-4xl w-full max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-light flex items-center justify-between">
-              <div>
-                <h2 className="font-display text-lg font-semibold text-charcoal">
-                  Search Listings
-                </h2>
-                <p className="text-sm text-gray">
-                  {formData.year} {formData.make} {formData.model}
-                  {formData.trim && ` ${formData.trim}`}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowSearchModal(false)}
-                className="text-gray hover:text-charcoal"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            <div className="p-4 border-b border-gray-light">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h2 className="font-display text-lg font-semibold text-charcoal">
+                    Search Listings
+                  </h2>
+                  <p className="text-sm text-gray">
+                    {formData.make} {formData.model}
+                    {formData.trim && ` ${formData.trim}`}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowSearchModal(false)}
+                  className="text-gray hover:text-charcoal"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-gray">Years:</span>
+                <input
+                  type="number"
+                  value={yearRange.min}
+                  onChange={(e) => setYearRange({ ...yearRange, min: parseInt(e.target.value) || 0 })}
+                  className="w-20 px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
+                />
+                <span className="text-gray">–</span>
+                <input
+                  type="number"
+                  value={yearRange.max}
+                  onChange={(e) => setYearRange({ ...yearRange, max: parseInt(e.target.value) || 0 })}
+                  className="w-20 px-2 py-1 text-sm border border-gray-light rounded-sm focus:outline-none focus:border-gold"
+                />
+                <button
+                  onClick={() => searchListings(yearRange)}
+                  disabled={isSearching}
+                  className="px-3 py-1 text-sm bg-gold text-black rounded-sm hover:bg-gold-dark disabled:opacity-50"
+                >
+                  {isSearching ? "Searching..." : "Update"}
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
@@ -984,7 +1021,7 @@ export default function EditReportPage({
                 <div className="text-center py-12">
                   <p className="text-red-500 mb-4">{searchError}</p>
                   <button
-                    onClick={searchListings}
+                    onClick={() => searchListings()}
                     className="text-gold hover:underline"
                   >
                     Try Again
@@ -1025,13 +1062,21 @@ export default function EditReportPage({
                         onChange={() => toggleVinSelection(result.vin)}
                         className="w-4 h-4 rounded border-gray-light text-gold focus:ring-gold flex-shrink-0"
                       />
-                      {result.imageUrl && (
-                        <img
-                          src={result.imageUrl}
-                          alt={`${result.year} ${result.make} ${result.model}`}
-                          className="w-24 h-16 object-cover rounded-sm flex-shrink-0"
-                        />
-                      )}
+                      <div className="w-24 h-16 flex-shrink-0 rounded-sm overflow-hidden bg-gray-100 relative">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-gray-400 text-xs">No image</span>
+                        </div>
+                        {result.imageUrl && (
+                          <img
+                            src={result.imageUrl}
+                            alt={`${result.year} ${result.make} ${result.model}`}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        )}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-medium text-charcoal flex items-center gap-2">
                           <span>
