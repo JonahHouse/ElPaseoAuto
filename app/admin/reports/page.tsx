@@ -78,19 +78,19 @@ export default function AdminReportsPage() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-display font-semibold text-charcoal">
+          <h1 className="text-xl md:text-2xl font-display font-semibold text-charcoal">
             Price Reports
           </h1>
-          <p className="text-gray mt-1">
+          <p className="text-gray text-sm mt-1">
             {reports.length} {reports.length === 1 ? "report" : "reports"}
           </p>
         </div>
         <Link
           href="/admin/reports/new"
-          className="px-4 py-2 bg-gold text-black font-medium rounded-sm hover:bg-gold-dark transition-colors"
+          className="px-4 py-2 bg-gold text-black font-medium rounded-sm hover:bg-gold-dark transition-colors text-center"
         >
           New Report
         </Link>
@@ -101,7 +101,7 @@ export default function AdminReportsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border border-gray-light rounded-sm focus:outline-none focus:ring-2 focus:ring-gold"
+          className="px-3 py-2 text-sm border border-gray-light rounded-sm focus:outline-none focus:ring-2 focus:ring-gold"
         >
           <option value="all">All Status</option>
           <option value="draft">Draft</option>
@@ -111,7 +111,7 @@ export default function AdminReportsPage() {
         </select>
       </div>
 
-      {/* Reports Table */}
+      {/* Reports List */}
       <div className="bg-white rounded-sm shadow-luxury overflow-hidden">
         {isLoading ? (
           <div className="p-8 text-center text-gray">Loading...</div>
@@ -139,39 +139,15 @@ export default function AdminReportsPage() {
             </Link>
           </div>
         ) : (
-          <table className="w-full">
-            <thead className="bg-off-white border-b border-gray-light/20">
-              <tr>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
-                  Vehicle
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
-                  Owner
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
-                  Price
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
-                  Comps
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
-                  Status
-                </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
-                  Created
-                </th>
-                <th className="text-right px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-light/20">
+          <>
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-gray-light/20">
               {reports.map((report) => (
-                <tr key={report.id} className="hover:bg-off-white/50">
-                  <td className="px-4 py-3">
+                <div key={report.id} className="p-4">
+                  <div className="flex items-start justify-between gap-3 mb-2">
                     <Link
                       href={`/admin/reports/${report.id}`}
-                      className="hover:text-gold"
+                      className="hover:text-gold flex-1"
                     >
                       <div className="font-medium text-charcoal">
                         {report.year} {report.make} {report.model}
@@ -180,106 +156,195 @@ export default function AdminReportsPage() {
                         <div className="text-sm text-gray">{report.trim}</div>
                       )}
                     </Link>
-                  </td>
-                  <td className="px-4 py-3 text-gray">
-                    {report.ownerName || "—"}
-                  </td>
-                  <td className="px-4 py-3">
-                    {report.suggestedPrice ? (
-                      <span className="font-medium text-gold">
-                        {formatPrice(report.suggestedPrice)}
-                      </span>
-                    ) : (
-                      <span className="text-gray">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-gray">
-                    {report._count.comps}
-                  </td>
-                  <td className="px-4 py-3">
                     <span
-                      className={`inline-block text-xs px-2 py-0.5 rounded-full ${
+                      className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
                         statusColors[report.status] || statusColors.draft
                       }`}
                     >
                       {statusLabels[report.status] || report.status}
                     </span>
-                  </td>
-                  <td className="px-4 py-3 text-gray text-sm">
-                    {formatDate(report.createdAt)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Link
-                        href={`/reports/${report.slug}`}
-                        target="_blank"
-                        className="text-gray hover:text-gold transition-colors"
-                        title="View public page"
-                      >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
-                      </Link>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="text-gray">
+                      {report.ownerName && <span>{report.ownerName} • </span>}
+                      {report._count.comps} comps • {formatDate(report.createdAt)}
+                    </div>
+                    {report.suggestedPrice && (
+                      <span className="font-medium text-gold">
+                        {formatPrice(report.suggestedPrice)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-light/20">
+                    <Link
+                      href={`/admin/reports/${report.id}`}
+                      className="text-sm text-gold hover:underline"
+                    >
+                      Edit
+                    </Link>
+                    <Link
+                      href={`/reports/${report.slug}`}
+                      target="_blank"
+                      className="text-sm text-gray hover:text-gold"
+                    >
+                      View
+                    </Link>
+                    <button
+                      onClick={() => deleteReport(report.id)}
+                      className="text-sm text-gray hover:text-red-500 ml-auto"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+            <table className="w-full min-w-[700px]">
+              <thead className="bg-off-white border-b border-gray-light/20">
+                <tr>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
+                    Vehicle
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
+                    Owner
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
+                    Price
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
+                    Comps
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
+                    Status
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
+                    Created
+                  </th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-gray uppercase tracking-wide">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-light/20">
+                {reports.map((report) => (
+                  <tr key={report.id} className="hover:bg-off-white/50">
+                    <td className="px-4 py-3">
                       <Link
                         href={`/admin/reports/${report.id}`}
-                        className="text-gray hover:text-gold transition-colors"
-                        title="Edit"
+                        className="hover:text-gold"
                       >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                          />
-                        </svg>
+                        <div className="font-medium text-charcoal">
+                          {report.year} {report.make} {report.model}
+                        </div>
+                        {report.trim && (
+                          <div className="text-sm text-gray">{report.trim}</div>
+                        )}
                       </Link>
-                      <button
-                        onClick={() => deleteReport(report.id)}
-                        className="text-gray hover:text-red-500 transition-colors"
-                        title="Delete"
+                    </td>
+                    <td className="px-4 py-3 text-gray">
+                      {report.ownerName || "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      {report.suggestedPrice ? (
+                        <span className="font-medium text-gold">
+                          {formatPrice(report.suggestedPrice)}
+                        </span>
+                      ) : (
+                        <span className="text-gray">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-gray">
+                      {report._count.comps}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-block text-xs px-2 py-0.5 rounded-full ${
+                          statusColors[report.status] || statusColors.draft
+                        }`}
                       >
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                        {statusLabels[report.status] || report.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray text-sm">
+                      {formatDate(report.createdAt)}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/reports/${report.slug}`}
+                          target="_blank"
+                          className="text-gray hover:text-gold transition-colors"
+                          title="View public page"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                            />
+                          </svg>
+                        </Link>
+                        <Link
+                          href={`/admin/reports/${report.id}`}
+                          className="text-gray hover:text-gold transition-colors"
+                          title="Edit"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                          </svg>
+                        </Link>
+                        <button
+                          onClick={() => deleteReport(report.id)}
+                          className="text-gray hover:text-red-500 transition-colors"
+                          title="Delete"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            </div>
+          </>
         )}
       </div>
     </div>

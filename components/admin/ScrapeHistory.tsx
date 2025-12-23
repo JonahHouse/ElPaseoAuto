@@ -55,11 +55,11 @@ export default function ScrapeHistory({ logs }: ScrapeHistoryProps) {
         Recent Scrapes
       </h3>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-sm min-w-[500px]">
           <thead>
             <tr className="border-b border-gray-light/20">
-              <th className="text-left py-3 px-2 text-gray font-medium">Date</th>
-              <th className="text-left py-3 px-2 text-gray font-medium">Status</th>
+              <th className="text-left py-3 px-2 text-gray font-medium min-w-[120px]">Date</th>
+              <th className="text-left py-3 px-2 text-gray font-medium min-w-[90px]">Status</th>
               <th className="text-center py-3 px-2 text-gray font-medium">Found</th>
               <th className="text-center py-3 px-2 text-gray font-medium">Added</th>
               <th className="text-center py-3 px-2 text-gray font-medium">Updated</th>
@@ -69,7 +69,7 @@ export default function ScrapeHistory({ logs }: ScrapeHistoryProps) {
           <tbody>
             {logs.map((log) => (
               <tr key={log.id} className="border-b border-gray-light/10">
-                <td className="py-3 px-2 text-charcoal">
+                <td className="py-3 px-2 text-charcoal whitespace-nowrap">
                   {formatDate(log.startedAt)}
                 </td>
                 <td className="py-3 px-2">

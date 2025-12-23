@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 
 const navItems = [
@@ -55,6 +57,7 @@ const navItems = [
 export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -62,58 +65,116 @@ export default function AdminSidebar() {
     router.refresh();
   };
 
+  const closeSidebar = () => setIsOpen(false);
+
   return (
-    <aside className="w-64 bg-charcoal min-h-[calc(100vh-5rem)] p-6 flex flex-col">
-      <div className="mb-8">
-        <h2 className="text-white font-display text-xl font-semibold">
-          Admin Panel
-        </h2>
-      </div>
-
-      <nav className="space-y-2 flex-1">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`
-                flex items-center gap-3 px-4 py-3 rounded-sm
-                transition-colors
-                ${
-                  isActive
-                    ? "bg-gold text-black"
-                    : "text-gray-light hover:bg-gray-dark hover:text-white"
-                }
-              `}
-            >
-              {item.icon}
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="pt-6 border-t border-gray-dark space-y-2">
-        <Link
-          href="/"
-          className="flex items-center gap-3 px-4 py-3 text-gray-light hover:text-white transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          <span>Back to Site</span>
+    <>
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-charcoal px-4 py-2 flex items-center justify-between">
+        <Link href="/admin" className="flex items-center">
+          <Image
+            src="/logos/epa-logo-white-text.png"
+            alt="El Paseo Auto Group"
+            width={200}
+            height={54}
+            className="h-10 w-auto"
+          />
         </Link>
         <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 text-gray-light hover:text-red-400 transition-colors w-full"
+          onClick={() => setIsOpen(!isOpen)}
+          className="text-white p-2 hover:bg-gray-dark rounded-sm transition-colors"
+          aria-label="Toggle menu"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          <span>Sign Out</span>
+          {isOpen ? (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          )}
         </button>
       </div>
-    </aside>
+
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={closeSidebar}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed lg:sticky top-0 left-0 z-50
+          w-64 bg-charcoal min-h-screen lg:min-h-[calc(100vh-5rem)]
+          p-6 pt-16 lg:pt-6 flex flex-col
+          transform transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}
+      >
+        {/* Desktop Logo */}
+        <div className="mb-6 hidden lg:block">
+          <Link href="/admin">
+            <Image
+              src="/logos/epa-logo-white-text.png"
+              alt="El Paseo Auto Group"
+              width={200}
+              height={54}
+              className="h-12 w-auto"
+            />
+          </Link>
+        </div>
+
+        <nav className="space-y-2 flex-1">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={closeSidebar}
+                className={`
+                  flex items-center gap-3 px-4 py-3 rounded-sm
+                  transition-colors
+                  ${
+                    isActive
+                      ? "bg-gold text-black"
+                      : "text-gray-light hover:bg-gray-dark hover:text-white"
+                  }
+                `}
+              >
+                {item.icon}
+                <span className="font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="pt-6 border-t border-gray-dark space-y-2">
+          <Link
+            href="/"
+            onClick={closeSidebar}
+            className="flex items-center gap-3 px-4 py-3 text-gray-light hover:text-white transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>Back to Site</span>
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 text-gray-light hover:text-red-400 transition-colors w-full"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

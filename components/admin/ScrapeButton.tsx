@@ -47,15 +47,13 @@ export default function ScrapeButton() {
 
   return (
     <div className="bg-white rounded-sm shadow-luxury p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="font-display text-lg text-charcoal font-semibold">
-            Inventory Sync
-          </h3>
-          <p className="text-gray text-sm">
-            Fetch latest inventory from source site
-          </p>
-        </div>
+      <div className="mb-4">
+        <h3 className="font-display text-lg text-charcoal font-semibold">
+          Inventory Sync
+        </h3>
+        <p className="text-gray text-sm mb-4">
+          Fetch latest inventory from source site
+        </p>
         <Button onClick={runScrape} isLoading={isRunning} disabled={isRunning}>
           {isRunning ? "Running..." : "Run Scrape"}
         </Button>

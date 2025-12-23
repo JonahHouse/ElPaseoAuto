@@ -93,13 +93,13 @@ export default function AdminContactsPage() {
   const unreadCount = contacts.filter((c) => !c.isRead).length;
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-display font-semibold text-charcoal">
+          <h1 className="text-xl md:text-2xl font-display font-semibold text-charcoal">
             Contact Submissions
           </h1>
-          <p className="text-gray mt-1">
+          <p className="text-gray text-sm mt-1">
             {unreadCount > 0 ? (
               <span className="text-gold font-medium">{unreadCount} unread</span>
             ) : (
@@ -110,11 +110,11 @@ export default function AdminContactsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-wrap gap-3 mb-6">
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="px-4 py-2 border border-gray-light rounded-sm focus:outline-none focus:ring-2 focus:ring-gold"
+          className="px-3 py-2 text-sm border border-gray-light rounded-sm focus:outline-none focus:ring-2 focus:ring-gold"
         >
           <option value="all">All Types</option>
           <option value="general">General</option>
@@ -127,7 +127,7 @@ export default function AdminContactsPage() {
         <select
           value={readFilter}
           onChange={(e) => setReadFilter(e.target.value)}
-          className="px-4 py-2 border border-gray-light rounded-sm focus:outline-none focus:ring-2 focus:ring-gold"
+          className="px-3 py-2 text-sm border border-gray-light rounded-sm focus:outline-none focus:ring-2 focus:ring-gold"
         >
           <option value="all">All Status</option>
           <option value="unread">Unread</option>
@@ -135,7 +135,7 @@ export default function AdminContactsPage() {
         </select>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6">
         {/* Contact List */}
         <div className="lg:col-span-2 bg-white rounded-sm shadow-luxury overflow-hidden">
           {isLoading ? (
