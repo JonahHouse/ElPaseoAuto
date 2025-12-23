@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
   const maxYear = searchParams.get("maxYear");
   const make = searchParams.get("make");
   const model = searchParams.get("model");
-  const limit = searchParams.get("limit") || "100";
+  const limit = searchParams.get("limit") || "200";
 
   if (!make || !model) {
     return NextResponse.json(
